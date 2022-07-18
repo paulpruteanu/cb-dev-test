@@ -30,24 +30,23 @@ export default class PaymentService implements PaymentServiceInterface {
     [AllowedPaymentSchemes.Chaps]: PaymentScheme.Chaps,
   };
   isValidPayment(
-    paymentScheme: PaymentScheme,
     account: Account,
     request: MakePaymentRequest
   ): boolean {
     if (
       account === null ||
-      this.paymentSchemeMapping[account.allowedPaymentSchemes] !== paymentScheme
+      this.paymentSchemeMapping[account.allowedPaymentSchemes] !== request.paymentScheme
     ) {
       return false;
     }
     if (
-      paymentScheme === PaymentScheme.FasterPayments &&
+      request.paymentScheme === PaymentScheme.FasterPayments &&
       account.balance < request.amount
     ) {
       return false;
     }
     return !(
-      paymentScheme === PaymentScheme.Chaps &&
+      request.paymentScheme === PaymentScheme.Chaps &&
       account.accountStatus !== AccountStatus.Live
     );
   }
@@ -57,7 +56,7 @@ export default class PaymentService implements PaymentServiceInterface {
       request.debtorAccountNumber
     );
 
-    if (!this.isValidPayment(request.paymentScheme, account, request)) {
+    if (!this.isValidPayment(account, request)) {
       return {
         success: false,
       };
