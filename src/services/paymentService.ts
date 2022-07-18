@@ -1,15 +1,13 @@
 import {
   Account,
-  AccountStatus,
-  AllowedPaymentSchemes,
   MakePaymentRequest,
   MakePaymentResult,
-  PaymentScheme,
 } from "../types";
 import DatastoreConfig from "../config/datastore";
 import BackupAccountDatastore from "../data/backupAccountDatastore";
 import AccountDatastore from "../data/accountDatastore";
 import PaymentServiceInterface from "./paymentService.interface";
+import Validator from "../validators/validator";
 
 export default class PaymentService implements PaymentServiceInterface {
   datastoreType: string;
@@ -24,39 +22,13 @@ export default class PaymentService implements PaymentServiceInterface {
       ? new BackupAccountDatastore()
       : new AccountDatastore();
   }
-  paymentSchemeMapping = {
-    [AllowedPaymentSchemes.FasterPayments]: PaymentScheme.FasterPayments,
-    [AllowedPaymentSchemes.Bacs]: PaymentScheme.Bacs,
-    [AllowedPaymentSchemes.Chaps]: PaymentScheme.Chaps,
-  };
-  isValidPayment(
-    account: Account,
-    request: MakePaymentRequest
-  ): boolean {
-    if (
-      account === null ||
-      this.paymentSchemeMapping[account.allowedPaymentSchemes] !== request.paymentScheme
-    ) {
-      return false;
-    }
-    if (
-      request.paymentScheme === PaymentScheme.FasterPayments &&
-      account.balance < request.amount
-    ) {
-      return false;
-    }
-    return !(
-      request.paymentScheme === PaymentScheme.Chaps &&
-      account.accountStatus !== AccountStatus.Live
-    );
-  }
 
   makePayment(request: MakePaymentRequest): MakePaymentResult {
     let account: Account = this.accountDatastore.getAccount(
       request.debtorAccountNumber
     );
 
-    if (!this.isValidPayment(account, request)) {
+    if (!(new Validator().isValid(account, request))) {
       return {
         success: false,
       };

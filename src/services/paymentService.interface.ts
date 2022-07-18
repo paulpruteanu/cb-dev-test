@@ -1,4 +1,4 @@
-import { Account, MakePaymentRequest, MakePaymentResult } from "../types";
+import { MakePaymentRequest, MakePaymentResult } from "../types";
 import AccountDatastore from "../data/accountDatastore";
 import BackupAccountDatastore from "../data/backupAccountDatastore";
 
@@ -7,5 +7,4 @@ export default interface PaymentServiceInterface {
   accountDatastore: AccountDatastore | BackupAccountDatastore;
   makePayment(request: MakePaymentRequest): MakePaymentResult;
   getAccountDatastore(): AccountDatastore | BackupAccountDatastore;
-  isValidPayment(account: Account, request: MakePaymentRequest): boolean;
 }
